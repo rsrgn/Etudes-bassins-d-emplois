@@ -97,54 +97,44 @@ code_ze <- c(9304)
 path_ze <- "./Gap/"
 name_ze <- "le bassin de Gap"
 
-
-if(length(code_ze)==1){
-  ze_1 <- comn2 %>% filter(ZE2010 == code_ze[1])
-  ze_merge <- comn2 %>% filter(ZE2010 == code_ze[1])
-} else if(length(code_ze)==2) {
-  ze_1 <- comn2 %>% filter(ZE2010 == code_ze[1])
-  ze_2 <- comn2 %>% filter(ZE2010 == code_ze[2])
-  ze_merge <- rbind(ze_1, ze_2)
+for(i in 1:length(code_ze)){
+  assign(paste("ze_", i, sep = ""), comn2 %>% filter(ZE2010 == code_ze[i]) )   
+}
+ze_merge <- ze_1
+if(length(code_ze)>1){
+  for(i in 2:length(code_ze)){
+    ze_merge <- rbind(ze_merge, get(paste("ze_", i, sep = "")))   
+  }
 } else {}
 
 #----Contours des zones d'emplois----
 
-if(length(code_ze)==1){
-  ze_1_cont <- st_union(ze_1)
-  ze_1_cont <- as(ze_1_cont,"Spatial")
-  ze_merge_cont <- as(ze_1_cont,"Spatial")
-} else if(length(code_ze)==2) {
-  ze_1_cont <- st_union(ze_1)
-  ze_1_cont <- as(ze_1_cont,"Spatial")
-  ze_2_cont <- st_union(ze_2)
-  ze_2_cont <- as(ze_2_cont,"Spatial")
-  ze_merge_cont <- st_union(ze_merge)
-  ze_merge_cont <- as(ze_merge_cont,"Spatial")
-} else {}
-
-#----Tests----
-t_comn2 <- comn2 %>% filter(ZE2010 == code_ze[1])
-
-t_comn2 <- comn2 %>% filter(NOM_COM == "Gap")
-t_ze <- ze %>% filter(LIBGEO == "Gap")
-
-
-t_insee_2010 <- insee2010 %>% filter(LIBGEO == "Gap")
-t_insee <- insee %>% filter(LIBGEO == "Gap")
-
+for(i in 1:length(code_ze)){
+  assign(paste("ze_", i, "_cont",sep = ""), st_union(get(paste("ze_", i, sep = ""))) )
+  assign(paste("ze_", i, "_cont",sep = ""), as(get(paste("ze_", i, "_cont", sep = "")),"Spatial") )
+}
+ze_merge_cont <- st_union(ze_merge)
+ze_merge_cont <- as(ze_merge_cont,"Spatial")
 
 #----preparation etudiants----
 
 
-PrepToCarto <- function(data_etud, regroup){
-  etud2 <- left_join(data_etud, ze, by = c("geo_id"="CODGEO"))
-  if(length(code_ze)==1){
-    etud_ze_1_2 <-etud2 %>% filter(ZE2010 == code_ze[1]) # 1ze
-  } else if(length(code_ze)==2) {
-    etud_ze_1 <- etud2 %>% filter(ZE2010 == code_ze[1]) #2ze
-    etud_ze_2 <- etud2 %>% filter(ZE2010 == code_ze[2]) #2ze
-    etud_ze_1_2 <- rbind(etud_ze_1, etud_ze_2) #2ze
+FilterEtudOnZe <- function(df){
+  etud2 <- left_join(df, ze, by = c("geo_id"="CODGEO"))
+  for(i in 1:length(code_ze)){
+    assign(paste("etud_ze_", i, sep = ""),etud2 %>% filter(ZE2010 == code_ze[i]) )   
+  }
+  etud_ze_1_2 <- etud_ze_1
+  if(length(code_ze)>1){
+    for(i in 2:length(code_ze)){
+      etud_ze_1_2 <- rbind(etud_ze_1_2, get(paste("etud_ze_", i, sep = "")))   
+    }
   } else {}
+  return(etud_ze_1_2)
+}
+
+PrepToCarto <- function(data_etud, regroup){
+  etud_ze_1_2 <- FilterEtudOnZe(data_etud)
   etud_ze_1_2_C <- etud_ze_1_2 %>% filter(regroupement != regroup) 
   etud_ze_1_2_C <- etud_ze_1_2_C %>% filter(niveau_geographique == "Commune")
   etud_ze_1_2_D <- etud_ze_1_2_C %>% dplyr::select(rentree, geo_nom, geo_id, 
@@ -164,15 +154,7 @@ PrepToCarto <- function(data_etud, regroup){
 comn_etud_ze_carte_2 <- PrepToCarto(etud, "TOTAL")
 
 PrepToGraph <- function(data_etud, regroup){
-  etud2 <- left_join(data_etud, ze, by = c("geo_id"="CODGEO"))
-  etud2$effectif <- as.numeric(etud2$effectif)
-  if(length(code_ze)==1){
-    etud_ze_1_2 <-etud2 %>% filter(ZE2010 == code_ze[1]) # 1ze
-  } else if(length(code_ze)==2) {
-    etud_ze_1 <- etud2 %>% filter(ZE2010 == code_ze[1]) #2ze
-    etud_ze_2 <- etud2 %>% filter(ZE2010 == code_ze[2]) #2ze
-    etud_ze_1_2 <- rbind(etud_ze_1, etud_ze_2) #2ze
-  } else {}
+  etud_ze_1_2 <- FilterEtudOnZe(data_etud)
   etud_ze_1_2_C <- etud_ze_1_2 %>% filter(regroupement != regroup) 
   etud_ze_1_2_C <- etud_ze_1_2_C %>% filter(niveau_geographique == "Commune")
   etud_ze_1_2_D <- etud_ze_1_2_C %>% dplyr::select(rentree, rgp_formations_ou_etablissements, 
@@ -190,15 +172,7 @@ comn_etab_graph_2 <- PrepToGraph(etud, "TOTAL")
 
 
 PrepToGraph2 <- function(data_etud, regroup){
-  etud2 <- left_join(data_etud, ze, by = c("geo_id"="CODGEO"))
-  etud2$effectif <- as.numeric(etud2$effectif)
-  if(length(code_ze)==1){
-    etud_ze_1_2 <-etud2 %>% filter(ZE2010 == code_ze[1]) # 1ze
-  } else if(length(code_ze)==2) {
-    etud_ze_1 <- etud2 %>% filter(ZE2010 == code_ze[1]) #2ze
-    etud_ze_2 <- etud2 %>% filter(ZE2010 == code_ze[2]) #2ze
-    etud_ze_1_2 <- rbind(etud_ze_1, etud_ze_2) #2ze
-  } else {}
+  etud_ze_1_2 <- FilterEtudOnZe(data_etud)
   etud_ze_1_2_C <- etud_ze_1_2 %>% filter(regroupement != regroup) 
   etud_ze_1_2_C <- etud_ze_1_2_C %>% filter(niveau_geographique == "Commune")
   etud_ze_1_2_D <- etud_ze_1_2_C %>% dplyr::select(rentree, rgp_formations_ou_etablissements, 
@@ -215,15 +189,7 @@ comn_etab_ze_graphe_1 <- PrepToGraph2(etud, "TOTAL")
 
 
 PrepToGraph3 <- function(data_etud, regroup){
-  etud2 <- left_join(data_etud, ze, by = c("geo_id"="CODGEO"))
-  etud2$effectif <- as.numeric(etud2$effectif)
-  if(length(code_ze)==1){
-    etud_ze_1_2 <-etud2 %>% filter(ZE2010 == code_ze[1]) # 1ze
-  } else if(length(code_ze)==2) {
-    etud_ze_1 <- etud2 %>% filter(ZE2010 == code_ze[1]) #2ze
-    etud_ze_2 <- etud2 %>% filter(ZE2010 == code_ze[2]) #2ze
-    etud_ze_1_2 <- rbind(etud_ze_1, etud_ze_2) #2ze
-  } else {}
+  etud_ze_1_2 <- FilterEtudOnZe(data_etud)
   etud_ze_1_2_C <- etud_ze_1_2 %>% filter(regroupement == regroup) 
   etud_ze_1_2_C <- etud_ze_1_2_C %>% filter(niveau_geographique == "Commune")
   etud_ze_1_2_D <- etud_ze_1_2_C %>% dplyr::select(rentree, rgp_formations_ou_etablissements, 
@@ -239,15 +205,7 @@ comn_etab_ze_graphe_3 <- PrepToGraph3(etud, "TOTAL")
 
 
 PrepToCarto2 <- function(data_etud, regroup){
-  etud2 <- left_join(data_etud, ze, by = c("geo_id"="CODGEO"))
-  etud2$effectif <- as.numeric(etud2$effectif)
-  if(length(code_ze)==1){
-    etud_ze_1_2 <-etud2 %>% filter(ZE2010 == code_ze[1]) # 1ze
-  } else if(length(code_ze)==2) {
-    etud_ze_1 <- etud2 %>% filter(ZE2010 == code_ze[1]) #2ze
-    etud_ze_2 <- etud2 %>% filter(ZE2010 == code_ze[2]) #2ze
-    etud_ze_1_2 <- rbind(etud_ze_1, etud_ze_2) #2ze
-  } else {}
+  etud_ze_1_2 <- FilterEtudOnZe(data_etud)
   etud_ze_1_2_C <- etud_ze_1_2 %>% filter(regroupement != regroup) 
   etud_ze_1_2_C <- etud_ze_1_2_C %>% filter(niveau_geographique == "Commune")
   etud_ze_1_2_D <- etud_ze_1_2_C %>% dplyr::select(rentree, rgp_formations_ou_etablissements, 
@@ -268,8 +226,13 @@ PrepToCarto2 <- function(data_etud, regroup){
 }
 comn_etud_carte_1 <- PrepToCarto2(etud, "TOTAL")
 
+#vérifications : si les sommes sont différents il faut investiguer
 sum(comn_etud_carte_1$eff_2016)
 sum(comn_etud_ze_carte_2$eff_2016)
+sum(comn_etab_graph_2 %>% filter(rentree == 2016) %>% dplyr::select(effectif))
+sum(comn_etab_ze_graphe_1 %>% filter(rentree == 2016) %>% dplyr::select(effectif))
+sum(comn_etab_ze_graphe_3 %>% filter(rentree == 2016) %>% dplyr::select(effectif))
+
 
 #-----graphique 1 - type etablissments croisé commune----
 dev.off() 
@@ -379,8 +342,10 @@ plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#8A5543", lwd = 0.5,
      add = TRUE)
 
 #limites des ZE
-plot(ze_2_cont, border="grey15", add = TRUE , lwd = 1.1)
-plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
+for(i in 1:length(code_ze)){
+  plot(get(paste("ze_", i,"_cont", sep = "")), 
+       border="grey15", add = TRUE , lwd = 1.1)
+}
 
 #plot tot de chomages et nombres d'actifs
 propSymbolsChoroLayer(comn_etud_ze_carte_2, var = "eff_2016", var2 = "var_2001_2016", 
@@ -431,12 +396,10 @@ plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#8A5543", lwd = 0.5,
      add = TRUE)
 
 #limites des ZE
-if(length(code_ze)==1){
-  plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
-} else if(length(code_ze)==2) {
-  plot(ze_2_cont, border="grey15", add = TRUE , lwd = 1.1)
-  plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
-} else {}
+for(i in 1:length(code_ze)){
+  plot(get(paste("ze_", i,"_cont", sep = "")), 
+       border="grey15", add = TRUE , lwd = 1.1)
+}
 
 #plot tot de chomages et nombres d'actifs
 propSymbolsChoroLayer(ze_merge, var = "P15_ACT1564", var2 = "chomage", 
@@ -485,12 +448,10 @@ plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#8A5543", lwd = 0.5,
      add = TRUE)
 
 #limites des ZE
-if(length(code_ze)==1){
-  plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
-} else if(length(code_ze)==2) {
-  plot(ze_2_cont, border="grey15", add = TRUE , lwd = 1.1)
-  plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
-} else {}
+for(i in 1:length(code_ze)){
+  plot(get(paste("ze_", i,"_cont", sep = "")), 
+       border="grey15", add = TRUE , lwd = 1.1)
+}
 
 #plot tot de chomages et nombres d'actifs
 propSymbolsChoroLayer(ze_merge, var = "P15_EMPLT", var2 = "P15_EMPLT", 
@@ -543,10 +504,10 @@ for(i in 1:3){
   #export de la carte
   png(paste(path_ze,"carte_demographie_",popC5[i],".png",sep=""),  width= 3600 , height= 3000 ,res=550)
   
-  #marges
+  #Marges
   opar <- par(mfrow = c(1,1), mar = c(0,0.1,1.6,0.1))
 
-  # Affichage des départements
+  #Affichage des départements
   plot(st_geometry(dept), col = "#FAEBD6", border = "grey80", lwd = 2, 
        xlim = bbox(ze_merge_cont)[1, ], ylim = bbox(ze_merge_cont)[2,
                                                                    ])
@@ -554,15 +515,13 @@ for(i in 1:3){
   plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#8A5543", lwd = 0.5, 
        add = TRUE)
   
-  #limites des ZE
-  if(length(code_ze)==1){
-    plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
-  } else if(length(code_ze)==2) {
-    plot(ze_2_cont, border="grey15", add = TRUE , lwd = 1.1)
-    plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
-  } else {}
+  #Affichage des limites des ZE
+  for(i in 1:length(code_ze)){
+    plot(get(paste("ze_", i,"_cont", sep = "")), 
+         border="grey15", add = TRUE , lwd = 1.1)
+  }
   
-  #varaiable
+  #Affichage des varaiables
   propSymbolsChoroLayer(ze_merge, var = var1C5[i], var2 = var2C5[i],
                    method = "q6", 
                    col = carto.pal(pal1="red.pal", n1 = 3 , pal2 = "green.pal", n2 = 3),
@@ -589,98 +548,3 @@ for(i in 1:3){
   
   dev.off() 
 }
-
-
-
-#------Carte 5 - test
-
-
-## -- 1ere carte : 2010
-# 
-# titreC5 <- paste("Répartition de la ", popC5, " dans les", zoneC5, " ",varC5[2])
-# # Affichage des départements
-# plot(st_geometry(dept), col = "#FAEBD6", border = "grey80", lwd = 2, 
-#      xlim = bbox(ze_merge_cont)[1, ], ylim = bbox(ze_merge_cont)[2, 
-#                                                                  ])
-# #Affichage de limites des communes
-# plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#8A5543", lwd = 0.5, 
-#      add = TRUE)
-# 
-# #limites des ZE
-# plot(ze_2_cont, border="grey15", add = TRUE , lwd = 1.1)
-# plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
-# 
-# summary(ze_merge$P15_POP1564)
-# Brk <- c(0,250,500,1000,2500,5000,7500,10000,12500,15000,15710)
-# 
-# #varaiable
-# propSymbolsLayer(ze_merge, var = "P10_POP1564",
-#                  #method = "quantile", nclass = 10, 
-#                  #breaks = Brk,col = carto.pal("blue.pal", 10)
-#                  border = "white", lwd = 0.5, 
-#                  col = "#BF2A3B", legend.pos = "topleft", 
-#                  legend.title.txt = popLC5)
-# 
-# #plot villes et noms de villes importantes
-# top <- ze_merge[order(ze_merge$P10_POP1564, decreasing = T), 
-#                 ][1:5, ]
-# plot(st_geometry(st_centroid(top)), pch = 20, cex = 1.5, add=TRUE)
-# labelLayer(top, top@data, spdfid = "INSEE_COM", 
-#            dfid = "INSEE_COM", txt = "P10_POP1564", cex = c(0.9, 
-#                                                             0.7, rep(0.5, 8)), pos = 4, font = 4, offset = 0.2)
-# labelLayer(top, top@data, spdfid = "INSEE_COM", 
-#            dfid = "INSEE_COM", txt = "NOM_COM", cex = c(0.9, 
-#                                                         0.7, rep(0.5, 8)), pos = 2, font = 4, offset = 0.3)
-# 
-# # Ajout de l'habillage
-# layoutLayer(title = titreC5,
-#             sources = "INSEE : recensements 2010 et 2015 et base des bassins d'emplois\nIGN : ADMIN EXPRESS", author = "Carte Réalisée avec les librairies : SF et Cartography", 
-#             scale = 10, south = TRUE, frame = FALSE, col = "#cdd2d4", 
-#             coltitle = "black")
-# 
-# 
-# 
-# 
-# ## -- 2eme carte : 2015
-# 
-# titreC5 <- paste("Répartition de la ", popC5, " dans les", zoneC5, " ",varC5[1])
-# # Affichage des départements
-# plot(st_geometry(dept), col = "#FAEBD6", border = "grey80", lwd = 2, 
-#      xlim = bbox(ze_merge_cont)[1, ], ylim = bbox(ze_merge_cont)[2, 
-#                                                                  ])
-# #Affichage de limites des communes
-# plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#8A5543", lwd = 0.5, 
-#      add = TRUE)
-# 
-# #limites des ZE
-# plot(ze_2_cont, border="grey15", add = TRUE , lwd = 1.1)
-# plot(ze_1_cont, border="grey15", add = TRUE , lwd = 1.1)
-# 
-# summary(ze_merge$P15_POP1564)
-# Brk <- c(0,250,500,1000,2500,5000,7500,10000,12500,15000,15710)
-# 
-# #varaiable
-# propSymbolsLayer(ze_merge, var = "P15_POP1564",
-#                  #method = "quantile", nclass = 10, 
-#                  #breaks = Brk,col = carto.pal("blue.pal", 10)
-#                  border = "white", lwd = 0.5, 
-#                  col = "#BF2A3B", legend.pos = "topleft", 
-#                  legend.title.txt = popLC5)
-# 
-# #plot villes et noms de villes importantes
-# top <- ze_merge[order(ze_merge$P15_POP1564, decreasing = T), 
-#                   ][1:5, ]
-# plot(st_geometry(st_centroid(top)), pch = 20, cex = 1.5, add=TRUE)
-# labelLayer(top, top@data, spdfid = "INSEE_COM", 
-#            dfid = "INSEE_COM", txt = "P15_POP1564", cex = c(0.9, 
-#                                                         0.7, rep(0.5, 8)), pos = 4, font = 4, offset = 0.2)
-# labelLayer(top, top@data, spdfid = "INSEE_COM", 
-#            dfid = "INSEE_COM", txt = "NOM_COM", cex = c(0.9, 
-#                                                         0.7, rep(0.5, 8)), pos = 2, font = 4, offset = 0.3)
-# 
-# # Ajout de l'habillage
-# layoutLayer(title = titreC5,
-#             sources = "INSEE : recensements 2010 et 2015 et base des bassins d'emplois\nIGN : ADMIN EXPRESS", author = "Carte Réalisée avec les librairies : SF et Cartography", 
-#             scale = 10, south = TRUE, frame = FALSE, col = "#cdd2d4", 
-#             coltitle = "black")
-#
