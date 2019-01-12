@@ -30,6 +30,29 @@ https://www.data.gouv.fr/fr/datasets/effectifs-d-etudiants-inscrits-dans-les-eta
 
 # Exemple de productions : Chaumont et Vitry le François
 
-![Carte emplois](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_emplois.png?raw=true "The plot produced by the R script")
+## Carte emplois
+![Carte emplois](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_emplois.png?raw=true "Carte emploist")
 
+## Carte chomage
+![Carte chomage](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_chomage.png?raw=true "Carte chomage")
 
+## Carte pupulation 15-64 ans
+![Carte pupulation 15-64 ans](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_demographie_population%20ag%C3%A9e%20de%2015%20%C3%A0%2064%20ans.png?raw=true "Carte pupulation 15-64 ans")
+
+## Carte pupulation 15-24 ans
+![Carte pupulation 15-24 ans](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_demographie_population%20ag%C3%A9e%20de%2015%20%C3%A0%2024%20ans.png?raw=true "Carte pupulation 15-24 ans")
+
+## Carte pupulation 25-54 ans
+![Carte pupulation 25-54 ans](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_demographie_population%20ag%C3%A9e%20de%2025%20%C3%A0%2054%20ans.png?raw=true "Carte pupulation 25-54 ans")
+
+## Carte étudiants
+![Carte étudiants](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_etudiants.png?raw=true "Carte étudiants")
+
+## Graphique étudiants par communes
+![Graphique étudiants par communes](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/graph_etudiants.png?raw=true "Graphique étudiants par communes")
+
+## Graphique étudiants par fillière
+![Graphique étudiants par fillière](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/graph_etablissements_commune.png?raw=true "Graphique étudiants par fillière")
+
+## Graphique étudiants par communes et par fillière
+![Graphique étudiants par communes et par fillière](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_emplois.png?raw=true "Graphique étudiants par communes et par fillière")
