@@ -28,14 +28,14 @@ https://www.data.gouv.fr/fr/datasets/effectifs-d-etudiants-inscrits-dans-les-eta
 
 # A faire :
 
-* permettre la création de carte pour n'importe quelle nombre de zones d'emplois (a ce stade on peut seulement utiliser le code pour 1 ou 2 zones d'emplois sur la même carte). remplacer le if par une boucle for. 
-* ajouter une cartographie des temps de trajets
-* Note de prise en main du code
-* améliorier la génération des échelles sur les cartes, en particulier pour les cas ou il y a moins de 6 valeurs. 
-* ajouter une cartographie des établissements d'enseignements
-* Voir si il est possible d'obtenir des statistiques sur les moteurs de recherches / réseaux sociaux sur les recherches de formation par zone d'emplois
-* Voir si il est possible d'automatiser un positionnements des labels sur les cartes de manière à ce qu'ils ne puissent pas se recouvrir
-* Sur les cartes ajouter un labbel avec le nom de la zone d'emplois pour les cartes comportant plus d'une zone
+- [x] permettre la création de carte pour n'importe quelle nombre de zones d'emplois (a ce stade on peut seulement utiliser le code pour 1 ou 2 zones d'emplois sur la même carte). remplacer le if par une boucle for. 
+- [ ] ajouter une cartographie des temps de trajets
+- [ ] Note de prise en main du code
+- [ ] améliorier la génération des échelles sur les cartes, en particulier pour les cas ou il y a moins de 6 valeurs. 
+- [ ] ajouter une cartographie des établissements d'enseignements
+- [ ] Voir si il est possible d'obtenir des statistiques sur les moteurs de recherches / réseaux sociaux sur les recherches de formation par zone d'emplois
+- [ ] Voir si il est possible d'automatiser un positionnements des labels sur les cartes de manière à ce qu'ils ne puissent pas se recouvrir
+- [ ] Sur les cartes ajouter un labbel avec le nom de la zone d'emplois pour les cartes comportant plus d'une zone
 
 # Exemple de productions : Chaumont et Vitry le François
 
