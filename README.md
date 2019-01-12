@@ -64,4 +64,4 @@ https://www.data.gouv.fr/fr/datasets/effectifs-d-etudiants-inscrits-dans-les-eta
 ![Graphique étudiants par fillière](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/graph_etablissements_commune.png?raw=true "Graphique étudiants par fillière")
 
 ## Graphique étudiants par communes et par fillière
-![Graphique étudiants par communes et par fillière](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_emplois.png?raw=true "Graphique étudiants par communes et par fillière")
+![Graphique étudiants par communes et par fillière](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/graph_etablissements.png?raw=true "Graphique étudiants par communes et par fillière")
