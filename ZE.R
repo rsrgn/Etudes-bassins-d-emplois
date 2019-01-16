@@ -11,6 +11,7 @@ library(utf8)
 library(sf)
 #library(SpatialPosition)
 library(cartography)
+library(spatialEco)
 
 #----chargement des données----
 #Cartes
@@ -23,10 +24,39 @@ insee <- read.csv2(file="./base-cc-emploi-pop-active-2015.csv")
 insee2010 <- read.csv2(file="./base-cc-emploi-pop-active-2010.csv")
 ze <- read.csv2(file="./ze.csv")
 etud <- read_csv2(file="./fr-esr-atlas_regional-effectifs-d-etudiants-inscrits.csv" )
+ees <- read_csv2(file="./etablissements_denseignement_superieur.csv")
+ees2 <- read.csv2(file="./etablissements_denseignement_superieur.csv")
 
 
 
 #----Preparation des donnees----
+
+#etablissements
+class(ees2$latitude..Y.)
+class(ees2$longitude..X.)
+
+class(ees$`latitude (Y)`)
+class(ees$`longitude (X)`)
+
+head(comn)
+st_crs(comn)
+
+ees <- ees %>% dplyr::rename( longitude = `longitude (X)`)
+ees <- ees %>% dplyr::rename( latitude = `latitude (Y)`)
+
+ees$longitude <- as.numeric(as.character(ees2$longitude))
+ees$latitude <- as.numeric(as.character(ees2$latitude))
+
+ees <- ees %>% dplyr::filter(is.na(longitude) == FALSE)
+ees <- ees %>% dplyr::filter(région != "La Réunion" | 
+                               région != "Guadeloupe" |
+                               région != "Guyane" |
+                               région != "Collectivités d'Outre Mer" |
+                               région != "Martinique")
+
+s_ees <- st_as_sf(x=ees, coords=c("longitude","latitude"), crs=4326) 
+s_ees <- st_transform(s_ees, crs="+proj=lcc +lat_1=44 +lat_2=49 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +units=m +no_defs")
+
 
 #correction sur etud --> conversion geo_id
 etud$geo_id_copy <- etud$geo_id 
@@ -115,6 +145,10 @@ for(i in 1:length(code_ze)){
 }
 ze_merge_cont <- st_union(ze_merge)
 ze_merge_cont <- as(ze_merge_cont,"Spatial")
+
+#----decoupage du fichier etablissements----
+s_ees_ze <- point.in.poly(s_ees,ze_merge_cont, sp = FALSE)
+s_ees_ze <- s_ees_ze %>% dplyr::filter(is.na(poly.ids) == FALSE)
 
 #----preparation etudiants----
 
@@ -548,3 +582,41 @@ for(i in 1:3){
   
   dev.off() 
 }
+#------carte 6 - etablissements----
+
+dev.off() 
+
+#export de la carte
+png(paste(path_ze,"carte_ees.png",sep=""),  width= 3600 , height= 3000 ,res=550)
+
+#marges
+opar <- par(mfrow = c(1,1), mar = c(0,0,1.6,0))
+
+# Affichage des départements
+plot(st_geometry(dept), col = "#FAEBD6", border = "grey80", lwd = 2, 
+     xlim = bbox(ze_merge_cont)[1, ], ylim = bbox(ze_merge_cont)[2, 
+                                                                 ])
+#Affichage de limites des communes
+plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#8A5543", lwd = 0.5, 
+     add = TRUE)
+
+#limites des ZE
+for(i in 1:length(code_ze)){
+  plot(get(paste("ze_", i,"_cont", sep = "")), 
+       border="grey15", add = TRUE , lwd = 1.1)
+}
+
+
+plot(st_geometry((s_ees_ze)), pch = 20, cex = 1.5, add=TRUE)
+labelLayer(s_ees_ze, txt = "nom", cex = 0.5, pos = 2, font = 4, offset = 0.2, overlap = FALSE)
+
+# Ajout de l'habillage
+layoutLayer(title = "Variation du nombre d'étudiants entre 2001 et 2016", 
+            sources = "Source: systèmes d'information et enquêtes du ministère de l'Éducation nationale, \nde l'Enseignement supérieur et de la Recherche, \ndes ministères en charge de l'Agriculture, \nde la Pêche, de la Culture, de la Santé et des Sports.", 
+            author = "Carte Réalisée avec les librairies : SF et Cartography", 
+            scale = 10, south = TRUE, frame = FALSE, col = "#cdd2d4", 
+            coltitle = "black")
+dev.off() 
+
+
+
