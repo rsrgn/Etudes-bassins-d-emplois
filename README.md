@@ -66,6 +66,9 @@ https://www.data.gouv.fr/fr/datasets/effectifs-d-etudiants-inscrits-dans-les-eta
 ## Carte des éablissements d'enseignement supérieur
 ![Carte des établissements](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_ees.png?raw=true "Carte des établissements")
 
+## Carte des éablissements d'enseignement secondaire et supérieur avec diagramme de Voronoï
+![Carte des établissements et voronoi](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/carte_ees_voonoi.png?raw=true "Carte des établissements et voronoi")
+
 ## Graphique étudiants par communes
 ![Graphique étudiants par communes](https://github.com/rsrgn/Etudes-bassins-d-emplois/blob/master/Chaumont-VLF/graph_etudiants.png?raw=true "Graphique étudiants par communes")
 
