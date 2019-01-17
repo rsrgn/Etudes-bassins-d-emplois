@@ -130,7 +130,7 @@ code_ze <- c(9304)
 path_ze <- "./Gap/"
 name_ze <- "le bassin de Gap"
 
-#----filtres sur les données carto----
+#---------filtres sur les données carto----
 for(i in 1:length(code_ze)){
   assign(paste("ze_", i, sep = ""), comn2 %>% filter(ZE2010 == code_ze[i]) )   
 }
@@ -141,7 +141,7 @@ if(length(code_ze)>1){
   }
 } else {}
 
-#----Contours des zones d'emplois----
+#---------Contours des zones d'emplois----
 
 for(i in 1:length(code_ze)){
   assign(paste("ze_", i, "_cont",sep = ""), st_union(get(paste("ze_", i, sep = ""))) )
@@ -150,7 +150,7 @@ for(i in 1:length(code_ze)){
 ze_merge_cont <- st_union(ze_merge)
 ze_merge_cont <- as(ze_merge_cont,"Spatial")
 
-#----decoupage du fichier etablissements----
+#---------decoupage du fichier etablissements----
 s_ees_ze <- point.in.poly(s_ees,ze_merge_cont, sp = FALSE)
 s_ees_ze <- s_ees_ze %>% dplyr::filter(is.na(poly.ids) == FALSE)
 
@@ -174,7 +174,7 @@ Label_wrapper <- function(lab_list){
 s_ees_ze <- Label_wrapper(s_ees_ze)
 
 
-#----preparation etudiants----
+#---------preparation etudiants----
 
 
 FilterEtudOnZe <- function(df){
@@ -630,17 +630,15 @@ for(i in 1:length(code_ze)){
        border="grey15", add = TRUE , lwd = 1.1)
 }
 
-
+plot(st_geometry((s_ees_ze)), pch = 20, cex = 1.5, add=TRUE, col="darkgreen")
+labelLayer(s_ees_ze, txt = "nom2", cex = 0.7, pos = 4, font = 4, 
+           offset = 0.4, overlap = FALSE, col="darkgreen")
 
 s_eesec_ze_f <- s_eesec_ze %>% filter(type_etablissement != "Collège")
-
 plot(st_geometry((s_eesec_ze_f)), pch = 18, cex = 0.8, add=TRUE, col="darkblue")
-labelLayer(s_eesec_ze_f, txt = "type_etablissement", cex = 0.4, pos = 2, font = 4, 
+labelLayer(s_eesec_ze_f, txt = "type_etablissement", cex = 0.5, pos = 2, font = 4, 
            offset = 0.2, overlap = FALSE, col="darkblue")
 
-plot(st_geometry((s_ees_ze)), pch = 20, cex = 1.5, add=TRUE, col="darkgreen")
-labelLayer(s_ees_ze, txt = "nom2", cex = 0.5, pos = 4, font = 4, 
-           offset = 0.4, overlap = FALSE, col="darkgreen")
 
 # Ajout de l'habillage
 layoutLayer(title = "Localisation des établissements d'enseignements", 
@@ -650,6 +648,67 @@ layoutLayer(title = "Localisation des établissements d'enseignements",
             coltitle = "black")
 dev.off() 
 
+#------carte 7 - etablissements + voronoi----
+
+dev.off() 
+
+#export de la carte
+png(paste(path_ze,"carte_ees_voonoi.png",sep=""),  width= 3600*1.5 , height= 3000 ,res=550)
+
+#marges
+opar <- par(mfrow = c(1,2), mar = c(0,0,1.6,0))
+
+# Affichage des départements
+plot(st_geometry(dept), col = "#FAEBD6", border = "grey80", lwd = 2, 
+     xlim = bbox(ze_merge_cont)[1, ]*c(0.98,1.02), 
+     ylim = bbox(ze_merge_cont)[2,])
+
+# filtre : supprimer les collèges de l'affichage
+s_eesec_ze_f <- s_eesec_ze %>% filter(type_etablissement != "Collège")
+
+# Calcul et affichage du voronoi
+d <- st_geometry(st_as_sf(s_eesec_ze_f,coords = c("longitude", "latitude")))
+box <- st_geometry(st_as_sf(ze_merge_cont))
+d <- st_union(d)
+v <- st_voronoi(d)
+plot(st_intersection(st_cast(v), (box)), 
+     col = "#F1EEE8", border = "grey80", add=TRUE)
+
+# Affichage des établissements d'enseignement secondaire
+plot(st_geometry((s_eesec_ze_f)), pch = 18, cex = 0.8, add=TRUE, col="darkblue")
+labelLayer(s_eesec_ze_f, txt = "type_etablissement", cex = 0.5, pos = 2, font = 4, 
+           offset = 0.2, overlap = FALSE, col="darkblue")
+
+# Ajout de l'habillage
+layoutLayer(title = "Localisation des établissements d'enseignements et diagramme de Voronoï\nEtablissement d'enseignement secondaire", 
+            sources = "Source : ONISEP", 
+            author = "Carte Réalisée avec les librairies : SF et Cartography", 
+            scale = NULL, south = FALSE, frame = TRUE, col = "#cdd2d4", 
+            coltitle = "black")
 
 
 
+# Affichage des départements
+plot(st_geometry(dept), col = "#FAEBD6", border = "grey80", lwd = 2, 
+     xlim = bbox(ze_merge_cont)[1, ]*c(0.98,1.02), ylim = bbox(ze_merge_cont)[2, 
+                                                                              ])
+# Calcul et affichage du voronoi
+d <- st_geometry(st_as_sf(s_ees_ze,coords = c("longitude", "latitude")))
+box <- st_geometry(st_as_sf(ze_merge_cont))
+d <- st_union(d)
+v <- st_voronoi(d)
+plot(st_intersection(st_cast(v), (box)), 
+     col = "#F1EEE8",border = "grey80", add=TRUE)
+
+# Affichage des établissements d'enseignement supérieur
+plot(st_geometry((s_ees_ze)), pch = 20, cex = 1.5, add=TRUE, col="darkgreen")
+labelLayer(s_ees_ze, txt = "nom2", cex = 0.7, pos = 4, font = 4, 
+           offset = 0.4, overlap = FALSE, col="darkgreen")
+
+# Ajout de l'habillage
+layoutLayer(title = "\nEtablissement d'enseignement supérieur", 
+            sources = "", 
+            author = "", 
+            south = TRUE, frame = TRUE, col = "#cdd2d4", 
+            coltitle = "black")
+dev.off() 
