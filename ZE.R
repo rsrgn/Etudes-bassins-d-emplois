@@ -26,26 +26,24 @@ ze <- read.csv2(file="./ze.csv")
 etud <- read_csv2(file="./fr-esr-atlas_regional-effectifs-d-etudiants-inscrits.csv" )
 ees <- read_csv2(file="./etablissements_denseignement_superieur.csv")
 ees2 <- read.csv2(file="./etablissements_denseignement_superieur.csv")
-
+eesec <- read_csv2(file="./etablissements_denseignement_secondaire.csv")
+eesec2 <- read.csv2(file="./etablissements_denseignement_secondaire.csv")
 
 
 #----Preparation des donnees----
 
 #etablissements
-class(ees2$latitude..Y.)
-class(ees2$longitude..X.)
-
-class(ees$`latitude (Y)`)
-class(ees$`longitude (X)`)
-
-head(comn)
-st_crs(comn)
-
 ees <- ees %>% dplyr::rename( longitude = `longitude (X)`)
 ees <- ees %>% dplyr::rename( latitude = `latitude (Y)`)
+eesec <- eesec %>% dplyr::rename( longitude = `longitude (X)`)
+eesec <- eesec %>% dplyr::rename( latitude = `latitude (Y)`)
+eesec <- eesec %>% dplyr::rename( type_etablissement = `type d'établissement`)
+
 
 ees$longitude <- as.numeric(as.character(ees2$longitude))
 ees$latitude <- as.numeric(as.character(ees2$latitude))
+eesec$longitude <- as.numeric(as.character(eesec2$longitude))
+eesec$latitude <- as.numeric(as.character(eesec2$latitude))
 
 ees <- ees %>% dplyr::filter(is.na(longitude) == FALSE)
 ees <- ees %>% dplyr::filter(région != "La Réunion" | 
@@ -54,8 +52,13 @@ ees <- ees %>% dplyr::filter(région != "La Réunion" |
                                région != "Collectivités d'Outre Mer" |
                                région != "Martinique")
 
+eesec <- eesec %>% dplyr::filter(is.na(longitude) == FALSE)
+
 s_ees <- st_as_sf(x=ees, coords=c("longitude","latitude"), crs=4326) 
 s_ees <- st_transform(s_ees, crs="+proj=lcc +lat_1=44 +lat_2=49 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +units=m +no_defs")
+
+s_eesec <- st_as_sf(x=eesec, coords=c("longitude","latitude"), crs=4326) 
+s_eesec <- st_transform(s_eesec, crs="+proj=lcc +lat_1=44 +lat_2=49 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +units=m +no_defs")
 
 
 #correction sur etud --> conversion geo_id
@@ -98,7 +101,7 @@ comn2$VAR_POP1524 <- (comn2$P15_POP1524 - comn2$P10_POP1524)
 comn2$VAR_POP2554 <- (comn2$P15_POP2554 - comn2$P10_POP2554)
 comn2$VAR_POP5564 <- (comn2$P15_POP5564 - comn2$P10_POP5564) 
 
-#----filtres sur les données carto----
+#----Selection des ZE----
 #code ZE2010 : chaumont --> 2106 ; vitry le francois --> 2107
 #code ZE2010 : Gap --> 9304 (probleme sur les données insee)
 #code ZE2010 : Aurillac --> 8304 
@@ -127,6 +130,7 @@ code_ze <- c(9304)
 path_ze <- "./Gap/"
 name_ze <- "le bassin de Gap"
 
+#----filtres sur les données carto----
 for(i in 1:length(code_ze)){
   assign(paste("ze_", i, sep = ""), comn2 %>% filter(ZE2010 == code_ze[i]) )   
 }
@@ -149,6 +153,26 @@ ze_merge_cont <- as(ze_merge_cont,"Spatial")
 #----decoupage du fichier etablissements----
 s_ees_ze <- point.in.poly(s_ees,ze_merge_cont, sp = FALSE)
 s_ees_ze <- s_ees_ze %>% dplyr::filter(is.na(poly.ids) == FALSE)
+
+s_eesec_ze <- point.in.poly(s_eesec,ze_merge_cont, sp = FALSE)
+s_eesec_ze <- s_eesec_ze %>% dplyr::filter(is.na(poly.ids) == FALSE)
+
+Label_wrapper <- function(lab_list){
+  lab_list$nom2 <- lab_list$nom
+  for(i in 1:nrow(lab_list)){
+    lab <- strwrap(lab_list$nom[i], prefix="\n", initial="", width = 35, simplify=TRUE)
+    lab_merge <- lab[1]
+    if(length(lab)>1){
+      for(j in 2:length(lab) ){
+        lab_merge <- paste(lab_merge,lab[j], sep="")
+      }
+    } else {}
+    lab_list$nom2[i] <- lab_merge
+  }
+  return(lab_list)
+}
+s_ees_ze <- Label_wrapper(s_ees_ze)
+
 
 #----preparation etudiants----
 
@@ -594,10 +618,10 @@ opar <- par(mfrow = c(1,1), mar = c(0,0,1.6,0))
 
 # Affichage des départements
 plot(st_geometry(dept), col = "#FAEBD6", border = "grey80", lwd = 2, 
-     xlim = bbox(ze_merge_cont)[1, ], ylim = bbox(ze_merge_cont)[2, 
+     xlim = bbox(ze_merge_cont)[1, ]*c(0.98,1.02), ylim = bbox(ze_merge_cont)[2, 
                                                                  ])
 #Affichage de limites des communes
-plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#8A5543", lwd = 0.5, 
+plot(st_geometry(ze_merge), col = "#F1EEE8", border = "#F1EEE8", lwd = 0.5, 
      add = TRUE)
 
 #limites des ZE
@@ -607,16 +631,25 @@ for(i in 1:length(code_ze)){
 }
 
 
-plot(st_geometry((s_ees_ze)), pch = 20, cex = 1.5, add=TRUE)
-labelLayer(s_ees_ze, txt = "nom", cex = 0.5, pos = 2, font = 4, offset = 0.2, overlap = FALSE)
+
+s_eesec_ze_f <- s_eesec_ze %>% filter(type_etablissement != "Collège")
+
+plot(st_geometry((s_eesec_ze_f)), pch = 18, cex = 0.8, add=TRUE, col="darkblue")
+labelLayer(s_eesec_ze_f, txt = "type_etablissement", cex = 0.4, pos = 2, font = 4, 
+           offset = 0.2, overlap = FALSE, col="darkblue")
+
+plot(st_geometry((s_ees_ze)), pch = 20, cex = 1.5, add=TRUE, col="darkgreen")
+labelLayer(s_ees_ze, txt = "nom2", cex = 0.5, pos = 4, font = 4, 
+           offset = 0.4, overlap = FALSE, col="darkgreen")
 
 # Ajout de l'habillage
-layoutLayer(title = "Variation du nombre d'étudiants entre 2001 et 2016", 
-            sources = "Source: systèmes d'information et enquêtes du ministère de l'Éducation nationale, \nde l'Enseignement supérieur et de la Recherche, \ndes ministères en charge de l'Agriculture, \nde la Pêche, de la Culture, de la Santé et des Sports.", 
+layoutLayer(title = "Localisation des établissements d'enseignements", 
+            sources = "Source : ONISEP", 
             author = "Carte Réalisée avec les librairies : SF et Cartography", 
             scale = 10, south = TRUE, frame = FALSE, col = "#cdd2d4", 
             coltitle = "black")
 dev.off() 
+
 
 
 
