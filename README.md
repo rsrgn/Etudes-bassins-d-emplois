@@ -16,6 +16,10 @@ Production des cartes et graphiques par bassin d'emplois
 
 https://www.data.gouv.fr/fr/datasets/effectifs-d-etudiants-inscrits-dans-les-etablissements-et-les-formations-de-l-enseignement-superieur/#_
 
+## Etablissements d'enseignement supérieur :
+
+* ONISEP : http://opendata.onisep.fr/data/57da952417293/2-etablissements-d-enseignement-superieur.htm
+
 # Librairies : 
 
 ## traitement des données
