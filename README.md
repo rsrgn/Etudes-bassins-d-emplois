@@ -25,9 +25,11 @@ https://www.data.gouv.fr/fr/datasets/effectifs-d-etudiants-inscrits-dans-les-eta
 ## traitement des données
 * Tidyverse
 * Reshape2 (pour les fonction melt et cast qui permette de restructurer facilement des jeux de données)
+* stringi
 
 ## Cartographie
 * SF
+* spatialEco
 * Cartography
 
 # A faire :
